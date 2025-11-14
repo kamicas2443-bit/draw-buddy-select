@@ -3,6 +3,7 @@ import { Student, DrawHistory } from '@/types/student';
 
 const STORAGE_KEY = 'students_data';
 const HISTORY_KEY = 'draw_history';
+const POOL_KEY = 'available_pool';
 
 export const useStudents = () => {
   const [students, setStudents] = useState<Student[]>(() => {
@@ -18,6 +19,11 @@ export const useStudents = () => {
     })) : [];
   });
 
+  const [availablePool, setAvailablePool] = useState<string[]>(() => {
+    const saved = localStorage.getItem(POOL_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
   }, [students]);
@@ -25,6 +31,10 @@ export const useStudents = () => {
   useEffect(() => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   }, [history]);
+
+  useEffect(() => {
+    localStorage.setItem(POOL_KEY, JSON.stringify(availablePool));
+  }, [availablePool]);
 
   const addStudent = (name: string) => {
     const newStudent: Student = {
@@ -48,11 +58,26 @@ export const useStudents = () => {
   const drawStudents = (count: number = 3): Student[] => {
     if (students.length < count) return [];
     
-    const shuffled = [...students].sort(() => Math.random() - 0.5);
-    const drawn = shuffled.slice(0, count);
+    // إذا كانت القائمة المتاحة فارغة أو أقل من العدد المطلوب، نعيد تعبئتها
+    let currentPool = [...availablePool];
+    if (currentPool.length < count) {
+      currentPool = students.map(s => s.id);
+      setAvailablePool(currentPool);
+    }
+    
+    // سحب عشوائي من القائمة المتاحة
+    const shuffled = [...currentPool].sort(() => Math.random() - 0.5);
+    const drawnIds = shuffled.slice(0, count);
+    
+    // إزالة المسحوبين من القائمة المتاحة
+    const remainingPool = currentPool.filter(id => !drawnIds.includes(id));
+    setAvailablePool(remainingPool);
+    
+    // الحصول على بيانات التلاميذ المسحوبين
+    const drawn = students.filter(s => drawnIds.includes(s.id));
     
     const updatedStudents = students.map(student => {
-      if (drawn.find(d => d.id === student.id)) {
+      if (drawnIds.includes(student.id)) {
         return {
           ...student,
           timesDrawn: student.timesDrawn + 1,
@@ -76,6 +101,8 @@ export const useStudents = () => {
 
   const importStudents = (data: Student[]) => {
     setStudents(data);
+    // إعادة تعيين القائمة المتاحة عند الاستيراد
+    setAvailablePool(data.map(s => s.id));
   };
 
   const clearHistory = () => {
