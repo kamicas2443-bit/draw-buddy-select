@@ -63,20 +63,31 @@ export const useStudents = () => {
     // الحصول على معرفات جميع الطلاب الحاليين
     const allStudentIds = students.map(s => s.id);
     
+    console.log('🎲 بدء السحب');
+    console.log('📋 جميع الطلاب:', allStudentIds);
+    console.log('✅ المتاحون للسحب قبل:', availablePool);
+    
     // تنظيف القائمة المتاحة من أي معرفات لطلاب محذوفين
     let currentPool = availablePool.filter(id => allStudentIds.includes(id));
     
     // إذا كانت القائمة المتاحة فارغة أو أقل من العدد المطلوب، نعيد تعبئتها بجميع الطلاب
     if (currentPool.length < count) {
+      console.log('🔄 إعادة تعبئة القائمة - دورة جديدة!');
       currentPool = [...allStudentIds];
     }
+    
+    console.log('✅ المتاحون للسحب:', currentPool);
     
     // سحب عشوائي من القائمة المتاحة
     const shuffled = [...currentPool].sort(() => Math.random() - 0.5);
     const drawnIds = shuffled.slice(0, count);
     
+    console.log('🎯 تم سحب:', drawnIds);
+    
     // إزالة المسحوبين من القائمة المتاحة
     const remainingPool = currentPool.filter(id => !drawnIds.includes(id));
+    console.log('📝 المتبقون بعد السحب:', remainingPool);
+    
     setAvailablePool(remainingPool);
     
     // الحصول على بيانات التلاميذ المسحوبين
