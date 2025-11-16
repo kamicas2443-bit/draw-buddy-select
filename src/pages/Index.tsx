@@ -359,7 +359,8 @@ const Index = () => {
     updateStudent,
     drawStudents,
     importStudents,
-    clearHistory
+    clearHistory,
+    resetDrawCycle
   } = useStudents();
   
   const [drawnStudents, setDrawnStudents] = useState<Student[]>([]);
@@ -409,7 +410,7 @@ const Index = () => {
         <StudentStats students={students} />
 
         <div className="my-8">
-          <div className="text-center mb-6">
+          <div className="text-center mb-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               onClick={handleDraw}
               disabled={isDrawing || students.length < 3}
@@ -427,6 +428,23 @@ const Index = () => {
                   سحب 3 تلاميذ
                 </>
               )}
+            </Button>
+            
+            <Button
+              onClick={() => {
+                resetDrawCycle();
+                toast({
+                  title: "تم إعادة التعيين ✅",
+                  description: "تم إعادة تعيين دورة السحب. يمكن الآن سحب جميع التلاميذ من جديد",
+                });
+              }}
+              disabled={isDrawing}
+              size="lg"
+              variant="outline"
+              className="text-lg px-8 py-6 border-2 hover:bg-secondary/10 transition-all duration-300"
+            >
+              <Clock className="w-5 h-5 ml-2" />
+              إعادة تعيين الدورة
             </Button>
           </div>
 

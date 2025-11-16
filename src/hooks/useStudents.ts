@@ -128,6 +128,12 @@ export const useStudents = () => {
     setHistory([]);
   };
 
+  const resetDrawCycle = () => {
+    const allIds = students.map(s => s.id);
+    setAvailablePool(allIds);
+    console.log('🔄 تم إعادة تعيين دورة السحب');
+  };
+
   return {
     students,
     history,
@@ -136,6 +142,7 @@ export const useStudents = () => {
     updateStudent,
     drawStudents,
     importStudents,
-    clearHistory
+    clearHistory,
+    resetDrawCycle
   };
 };
