@@ -43,10 +43,12 @@ export const useStudents = () => {
       timesDrawn: 0,
     };
     setStudents(prev => [...prev, newStudent]);
+    setAvailablePool(prev => [...prev, newStudent.id]);
   };
 
   const removeStudent = (id: string) => {
     setStudents(prev => prev.filter(s => s.id !== id));
+    setAvailablePool(prev => prev.filter(studentId => studentId !== id));
   };
 
   const updateStudent = (id: string, name: string) => {
