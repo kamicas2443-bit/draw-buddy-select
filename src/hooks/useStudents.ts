@@ -60,62 +60,62 @@ export const useStudents = () => {
   const drawStudents = (count: number = 3): Student[] => {
     if (students.length < count) return [];
     
-    // الحصول على معرفات جميع الطلاب الحاليين
-    const allStudentIds = students.map(s => s.id);
+    console.log('━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🎲 بدء عملية السحب');
     
-    console.log('🎲 بدء السحب');
-    console.log('📋 جميع الطلاب:', allStudentIds);
-    console.log('✅ المتاحون للسحب قبل:', availablePool);
+    // الحصول على جميع معرفات الطلاب
+    const allIds = students.map(s => s.id);
+    console.log(`📋 إجمالي الطلاب: ${allIds.length}`);
+    console.log(`🎯 عدد المطلوب سحبه: ${count}`);
     
-    // تنظيف القائمة المتاحة من أي معرفات لطلاب محذوفين
-    let currentPool = availablePool.filter(id => allStudentIds.includes(id));
+    // تنظيف القائمة المتاحة من أي طلاب محذوفين
+    let pool = availablePool.filter(id => allIds.includes(id));
+    console.log(`✅ المتاحون حالياً: ${pool.length}`);
     
-    // إذا كانت القائمة المتاحة فارغة أو أقل من العدد المطلوب، نعيد تعبئتها بجميع الطلاب
-    if (currentPool.length < count) {
-      console.log('🔄 إعادة تعبئة القائمة - دورة جديدة!');
-      currentPool = [...allStudentIds];
+    // إذا لم يكن هناك طلاب كافيين، ابدأ دورة جديدة
+    if (pool.length < count) {
+      console.log('🔄 بدء دورة جديدة - إعادة تعبئة القائمة');
+      pool = [...allIds];
     }
     
-    console.log('✅ المتاحون للسحب:', currentPool);
+    // خلط القائمة وسحب العدد المطلوب
+    const shuffled = pool.sort(() => 0.5 - Math.random());
+    const selectedIds = shuffled.slice(0, count);
     
-    // سحب عشوائي من القائمة المتاحة
-    const shuffled = [...currentPool].sort(() => Math.random() - 0.5);
-    const drawnIds = shuffled.slice(0, count);
+    console.log('🎯 تم اختيار:', selectedIds);
     
-    console.log('🎯 تم سحب:', drawnIds);
+    // تحديث القائمة المتاحة (إزالة من تم سحبهم)
+    const newPool = pool.filter(id => !selectedIds.includes(id));
+    console.log(`📝 المتبقون: ${newPool.length}`);
     
-    // إزالة المسحوبين من القائمة المتاحة
-    const remainingPool = currentPool.filter(id => !drawnIds.includes(id));
-    console.log('📝 المتبقون بعد السحب:', remainingPool);
+    setAvailablePool(newPool);
     
-    setAvailablePool(remainingPool);
+    // الحصول على بيانات الطلاب المسحوبين
+    const drawnStudents = students
+      .filter(s => selectedIds.includes(s.id))
+      .map(s => ({
+        ...s,
+        timesDrawn: s.timesDrawn + 1,
+        lastDrawn: new Date()
+      }));
     
-    // الحصول على بيانات التلاميذ المسحوبين
-    const drawn = students.filter(s => drawnIds.includes(s.id));
+    // تحديث قائمة الطلاب
+    setStudents(prev => prev.map(s => {
+      const drawn = drawnStudents.find(d => d.id === s.id);
+      return drawn || s;
+    }));
     
-    // تحديث عدد مرات السحب
-    const updatedStudents = students.map(student => {
-      if (drawnIds.includes(student.id)) {
-        return {
-          ...student,
-          timesDrawn: student.timesDrawn + 1,
-          lastDrawn: new Date()
-        };
-      }
-      return student;
-    });
-    
-    setStudents(updatedStudents);
-    
-    // إضافة إلى السجل
-    const historyEntry: DrawHistory = {
+    // إضافة للسجل
+    setHistory(prev => [{
       id: crypto.randomUUID(),
-      students: drawn,
+      students: drawnStudents,
       date: new Date()
-    };
-    setHistory(prev => [historyEntry, ...prev].slice(0, 50));
+    }, ...prev].slice(0, 50));
     
-    return drawn;
+    console.log('✅ انتهى السحب بنجاح');
+    console.log('━━━━━━━━━━━━━━━━━━━━━');
+    
+    return drawnStudents;
   };
 
   const importStudents = (data: Student[]) => {
