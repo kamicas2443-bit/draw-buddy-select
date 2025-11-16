@@ -60,11 +60,15 @@ export const useStudents = () => {
   const drawStudents = (count: number = 3): Student[] => {
     if (students.length < count) return [];
     
-    // إذا كانت القائمة المتاحة فارغة أو أقل من العدد المطلوب، نعيد تعبئتها
-    let currentPool = [...availablePool];
+    // الحصول على معرفات جميع الطلاب الحاليين
+    const allStudentIds = students.map(s => s.id);
+    
+    // تنظيف القائمة المتاحة من أي معرفات لطلاب محذوفين
+    let currentPool = availablePool.filter(id => allStudentIds.includes(id));
+    
+    // إذا كانت القائمة المتاحة فارغة أو أقل من العدد المطلوب، نعيد تعبئتها بجميع الطلاب
     if (currentPool.length < count) {
-      currentPool = students.map(s => s.id);
-      setAvailablePool(currentPool);
+      currentPool = [...allStudentIds];
     }
     
     // سحب عشوائي من القائمة المتاحة
@@ -78,6 +82,7 @@ export const useStudents = () => {
     // الحصول على بيانات التلاميذ المسحوبين
     const drawn = students.filter(s => drawnIds.includes(s.id));
     
+    // تحديث عدد مرات السحب
     const updatedStudents = students.map(student => {
       if (drawnIds.includes(student.id)) {
         return {
@@ -91,6 +96,7 @@ export const useStudents = () => {
     
     setStudents(updatedStudents);
     
+    // إضافة إلى السجل
     const historyEntry: DrawHistory = {
       id: crypto.randomUUID(),
       students: drawn,
